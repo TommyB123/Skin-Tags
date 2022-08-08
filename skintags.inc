@@ -145,9 +145,10 @@
 \*                                                                       */
 
 #include <a_samp>
+#include <PawnPlus>
+#include <pp-hooks>
 
-#define IsValidSkin(%0) \
-    (%0 != 74 && (0 <= %0 <= 311))
+new Map:SkinPool;
 
 #define SKIN_FLAG_GENDER         (0b00000000000000000000000000000001)
 #define SKIN_GENDER_FEMALE       (0b00000000000000000000000000000000)
@@ -667,9 +668,44 @@ static const skinInfoList[][e_SKIN_INFO] = {
     {!"dsherna", !"Desert Sheriff (Without hat)"                       , SKIN_GROUP_COP         , SKIN_ANIM_SWAT         , SKIN_GENDER_MALE   | SKIN_RACE_WHITE}
 };
 
+hook public OnGameModeInit() {
+    SkinPool = map_new();
+
+    for(new i = 0; i < sizeof(skinInfoList); ++i) {
+        if(i == 74) continue;
+
+        map_set(SkinPool, i, i);
+    }
+}
+
+hook public OnGameModeExit()
+{
+    map_delete(SkinPool);
+}
+
+hook native AddCharModel(baseid, newid, dffname[], txdname[])
+{
+    map_set(SkinPool, newid, baseid);
+    return AddCharModel(baseid, newid, dffname, txdname);
+}
+
+IsValidSkin(skinid) {
+    return map_has_key(SkinPool, skinid);
+}
+
+#define IsValidSkinID IsValidSkin
+
+stock IsCustomSkin(skinid) {
+    return (skinid >= 20000 && skinid <= 30000);
+}
+
 stock GetSkinName(skinid, output[], outlen = sizeof(output)) {
     if(!IsValidSkin(skinid))
         return 0;
+    
+    if(IsCustomSkin(skinid)) {
+        skinid = map_get(SkinPool, skinid);
+    }
     
     strunpack(output, skinInfoList[skinid][e_SKIN_NAME], outlen);
     
@@ -679,6 +715,10 @@ stock GetSkinName(skinid, output[], outlen = sizeof(output)) {
 stock GetSkinModelName(skinid, output[], outlen = sizeof(output)) {
     if(!IsValidSkin(skinid))
         return 0;
+    
+    if(IsCustomSkin(skinid)) {
+        skinid = map_get(SkinPool, skinid);
+    }
     
     strunpack(output, skinInfoList[skinid][e_SKIN_MODEL_NAME], outlen);
     
@@ -692,12 +732,20 @@ stock GetSkinGender(skinid) {
     if(!IsValidSkin(skinid))
         return -1;
     
+    if(IsCustomSkin(skinid)) {
+        skinid = map_get(SkinPool, skinid);
+    }
+    
     return (skinInfoList[skinid][e_SKIN_FLAGS] & SKIN_FLAG_GENDER);
 }
 
 stock GetSkinGenderName(skinid, output[], outlen = sizeof(output)) {
     if(!IsValidSkin(skinid))
         return 0;
+    
+    if(IsCustomSkin(skinid)) {
+        skinid = map_get(SkinPool, skinid);
+    }
     
     output[0] = '\0';
     strcat(output, GetSkinGender(skinid) ? ("male") : ("female"), outlen);
@@ -709,12 +757,20 @@ stock GetSkinRace(skinid) {
     if(!IsValidSkin(skinid))
         return -1;
     
+    if(IsCustomSkin(skinid)) {
+        skinid = map_get(SkinPool, skinid);
+    }
+    
     return ((skinInfoList[skinid][e_SKIN_FLAGS] & SKIN_FLAG_RACE));
 }
 
 stock GetSkinRaceName(skinid, output[], outlen = sizeof(output)) {
     if(!IsValidSkin(skinid))
         return 0;
+    
+    if(IsCustomSkin(skinid)) {
+        skinid = map_get(SkinPool, skinid);
+    }
     
     output[0] = '\0';
     switch(GetSkinRace(skinid)) {
@@ -735,12 +791,20 @@ stock GetSkinGang(skinid) {
     if(!IsValidSkin(skinid))
         return -1;
     
+    if(IsCustomSkin(skinid)) {
+        skinid = map_get(SkinPool, skinid);
+    }
+    
     return ((skinInfoList[skinid][e_SKIN_FLAGS] & SKIN_FLAG_GANG));
 }
 
 stock GetSkinGangName(skinid, output[], outlen = sizeof(output)) {
     if(!IsValidSkin(skinid))
         return 0;
+    
+    if(IsCustomSkin(skinid)) {
+        skinid = map_get(SkinPool, skinid);
+    }
     
     strunpack(output, s_GangNames[GetSkinGang(skinid) >> 3], outlen);
     
@@ -751,12 +815,20 @@ stock GetSkinService(skinid) {
     if(!IsValidSkin(skinid))
         return -1;
     
+    if(IsCustomSkin(skinid)) {
+        skinid = map_get(SkinPool, skinid);
+    }
+    
     return ((skinInfoList[skinid][e_SKIN_FLAGS] & SKIN_FLAG_SERVICE));
 }
 
 stock GetSkinServiceName(skinid, output[], outlen = sizeof(output)) {
     if(!IsValidSkin(skinid))
         return 0;
+    
+    if(IsCustomSkin(skinid)) {
+        skinid = map_get(SkinPool, skinid);
+    }
     
     strunpack(output, s_ServiceNames[GetSkinService(skinid) >> 7], outlen);
     
@@ -766,6 +838,10 @@ stock GetSkinServiceName(skinid, output[], outlen = sizeof(output)) {
 stock GetSkinType(skinid) {
     if(!IsValidSkin(skinid))
         return -1;
+    
+    if(IsCustomSkin(skinid)) {
+        skinid = map_get(SkinPool, skinid);
+    }
     
     new type = skinInfoList[skinid][e_SKIN_FLAGS] & SKIN_FLAG_TYPE;
 
@@ -785,12 +861,20 @@ stock GetSkinAnimGroup(skinid) {
     if(!IsValidSkin(skinid))
         return -1;
     
+    if(IsCustomSkin(skinid)) {
+        skinid = map_get(SkinPool, skinid);
+    }
+    
     return skinInfoList[skinid][e_SKIN_ANIMGRP];
 }
 
 stock GetSkinAnimGroupName(skinid, output[], outlen = sizeof(output)) {
     if(!IsValidSkin(skinid))
         return 0;
+    
+    if(IsCustomSkin(skinid)) {
+        skinid = map_get(SkinPool, skinid);
+    }
     
     strunpack(output, s_AnimGroupNames[skinInfoList[skinid][e_SKIN_ANIMGRP]], outlen);
     
@@ -801,12 +885,20 @@ stock GetSkinGroup(skinid) {
     if(!IsValidSkin(skinid))
         return -1;
     
+    if(IsCustomSkin(skinid)) {
+        skinid = map_get(SkinPool, skinid);
+    }
+    
     return skinInfoList[skinid][e_SKIN_PEDGRP];
 }
 
 stock GetSkinGroupName(skinid, output[], outlen = sizeof(output)) {
     if(!IsValidSkin(skinid))
         return 0;
+    
+    if(IsCustomSkin(skinid)) {
+        skinid = map_get(SkinPool, skinid);
+    }
     
     strunpack(output, pedGroups[skinInfoList[skinid][e_SKIN_PEDGRP]][e_GRP_NAME], outlen);
     
@@ -817,6 +909,10 @@ stock GetSkinFear(skinid) {
     if(!IsValidSkin(skinid))
         return -1;
     
+    if(IsCustomSkin(skinid)) {
+        skinid = map_get(SkinPool, skinid);
+    }
+    
     return pedGroups[skinInfoList[skinid][e_SKIN_PEDGRP]][e_FEAR];
 }
 
@@ -824,12 +920,20 @@ stock GetSkinTemper(skinid) {
     if(!IsValidSkin(skinid))
         return -1;
     
+    if(IsCustomSkin(skinid)) {
+        skinid = map_get(SkinPool, skinid);
+    }
+    
     return pedGroups[skinInfoList[skinid][e_SKIN_PEDGRP]][e_TEMPER];
 }
 
 stock GetSkinLawfullness(skinid) {
     if(!IsValidSkin(skinid))
         return -1;
+    
+    if(IsCustomSkin(skinid)) {
+        skinid = map_get(SkinPool, skinid);
+    }
     
     return pedGroups[skinInfoList[skinid][e_SKIN_PEDGRP]][e_LAWFUL];
 }
@@ -839,6 +943,10 @@ stock GetSkinAppeal(skinid) {
     if(!IsValidSkin(skinid))
         return -1;
     
+    if(IsCustomSkin(skinid)) {
+        skinid = map_get(SkinPool, skinid);
+    }
+    
     return pedGroups[skinInfoList[skinid][e_SKIN_PEDGRP]][e_APPEAL];
 }
 
@@ -846,12 +954,20 @@ stock GetSkinFOF(skinid) {
     if(!IsValidSkin(skinid))
         return -1;
     
+    if(IsCustomSkin(skinid)) {
+        skinid = map_get(SkinPool, skinid);
+    }
+    
     return pedGroups[skinInfoList[skinid][e_SKIN_PEDGRP]][e_FOF];
 }
 
 stock Float:GetSkinStrength(skinid) {
     if(!IsValidSkin(skinid))
         return -1.0;
+
+    if(IsCustomSkin(skinid)) {
+        skinid = map_get(SkinPool, skinid);
+    }
     
     return pedGroups[skinInfoList[skinid][e_SKIN_PEDGRP]][e_STRENGTH];
 }
@@ -859,6 +975,10 @@ stock Float:GetSkinStrength(skinid) {
 stock Float:GetSkinDefence(skinid) {
     if(!IsValidSkin(skinid))
         return -1.0;
+    
+    if(IsCustomSkin(skinid)) {
+        skinid = map_get(SkinPool, skinid);
+    }
     
     return pedGroups[skinInfoList[skinid][e_SKIN_PEDGRP]][e_DEFENCE];
 }
