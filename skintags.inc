@@ -683,11 +683,18 @@ hook public OnGameModeExit()
     map_delete(SkinPool);
 }
 
-hook native AddCharModel(baseid, newid, dffname[], txdname[])
+stock ST_AddCharModel(baseid, newid, const dffname[], const txdname[])
 {
     map_set(SkinPool, newid, baseid);
     return AddCharModel(baseid, newid, dffname, txdname);
 }
+#if defined _ALS_AddCharModel
+	#undef AddCharModel
+#else
+	#define _ALS_AddCharModel
+#endif
+
+#define AddCharModel ST_AddCharModel
 
 IsValidSkin(skinid) {
     return map_has_key(SkinPool, skinid);
