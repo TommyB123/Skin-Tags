@@ -3,7 +3,6 @@
 	"output": "test.amx",
 	"dependencies": [
 		"sampctl/samp-stdlib",
-		"IllidanS4/PawnPlus:v1.4.0.1",
-		"AGraber/pawn-plus-hooks"
+		"IllidanS4/PawnPlus:v1.4.0.1"
 	]
 }
