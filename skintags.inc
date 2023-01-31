@@ -669,7 +669,7 @@ static const skinInfoList[][e_SKIN_INFO] = {
 };
 
 hook public OnGameModeInit() {
-    SkinPool = map_new();
+    SkinPool = map_new(true);
 
     for(new i = 0; i < sizeof(skinInfoList); ++i) {
         if(i == 74) continue;
